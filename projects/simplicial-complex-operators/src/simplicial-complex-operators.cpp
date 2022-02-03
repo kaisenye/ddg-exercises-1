@@ -1,6 +1,7 @@
 // Implement member functions for SimplicialComplexOperators class.
 #include "simplicial-complex-operators.h"
 
+// calling the function from geometry central
 using namespace geometrycentral;
 using namespace geometrycentral::surface;
 
@@ -33,7 +34,6 @@ void SimplicialComplexOperators::assignElementIndices() {
     for (Face f : mesh->faces()) {
         idx = geometry->faceIndices[f];
     }
-
     // You can more easily get the indices of mesh elements using the function getIndex(), albeit less efficiently and
     // technically less safe (although you don't need to worry about it), like so:
     //
@@ -60,8 +60,23 @@ SparseMatrix<size_t> SimplicialComplexOperators::buildVertexEdgeAdjacencyMatrix(
     // TODO
     // Note: You can build an Eigen sparse matrix from triplets, then return it as a Geometry Central SparseMatrix.
     // See <https://eigen.tuxfamily.org/dox/group__TutorialSparse.html> for documentation.
+    geometry->requireVertexIndices();
+    geometry->requireEdgeIndices();
 
-    return identityMatrix<size_t>(1); // placeholder
+    std::vector<T_int> tripletList;
+    size_t rows = mesh->nEdges();
+    size_t cols = mesh->nVertices();
+    SM_int mat(rows, cols);
+
+
+    for (Edge e : mesh->edges()){
+        tripletList.push_back(T(eometry->edgeIndices[e],geometry->vertexIndices[e.firstVertex()], 1));
+        tripletList.push_back(T(eometry->edgeIndices[e],geometry->vertexIndices[e.secondVertex()], 1));
+    }
+
+    mat.setFromTriplets(tripletList.begin(), tripletList.end());
+
+    return mat; // placeholder
 }
 
 /*
